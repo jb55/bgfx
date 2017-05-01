@@ -70,22 +70,32 @@ solution "bgfx"
 	language "C++"
 	startproject "example-00-helloworld"
 
+function assertDir(dir, name)
+  if not os.isdir(dir) then
+    print(name .. " not found at " .. path)
+    print("For more info see: https://bkaradzic.github.io/bgfx/build.html")
+    os.exit()
+  end
+end
+
+function envOrRel(var, name)
+  envdir = os.getenv(var)
+  if not envdir then
+    rel = path.getabsolute(path.join(BGFX_DIR, "../" .. name))
+    assertDir(rel, name)
+    return rel
+  end
+  assertDir(envdir, name)
+  return envdir
+end
+
 MODULE_DIR = path.getabsolute("../")
 BGFX_DIR   = path.getabsolute("..")
-BIMG_DIR   = path.getabsolute(path.join(BGFX_DIR, "../bimg"))
-BX_DIR     = os.getenv("BX_DIR")
+BIMG_DIR   = envOrRel("BIMG_DIR", "bimg")
+BX_DIR     = envOrRel("BX_DIR", "bx")
 
 local BGFX_BUILD_DIR = path.join(BGFX_DIR, ".build")
 local BGFX_THIRD_PARTY_DIR = path.join(BGFX_DIR, "3rdparty")
-if not BX_DIR then
-	BX_DIR = path.getabsolute(path.join(BGFX_DIR, "../bx"))
-end
-
-if not os.isdir(BX_DIR) then
-	print("bx not found at " .. BX_DIR)
-	print("For more info see: https://bkaradzic.github.io/bgfx/build.html")
-	os.exit()
-end
 
 dofile (path.join(BX_DIR, "scripts/toolchain.lua"))
 if not toolchain(BGFX_BUILD_DIR, BGFX_THIRD_PARTY_DIR) then
